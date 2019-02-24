@@ -3,7 +3,7 @@ package hackerrank;
 import java.util.*;
 
 /**
- * https://www.1point3acres.com/bbs/thread-278720-1-1.html
+ * https://github.com/cicean/leetcode-java/blob/98530981aecbd75bf482fd22df2cfc553690c104/src/Airbnb/HostCrowding.java
  */
 public class HostCrowding {
     static List<String> paginate(int resultsPerPage, List<String> results) {
