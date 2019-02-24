@@ -7,9 +7,9 @@ import java.util.*;
  */
 public class HostCrowding {
     static List<String> paginate(int resultsPerPage, List<String> results) {
-        Map<String, List<String>> map = new HashMap<>();//host_id
-        List<String> source = new LinkedList<>();
-        TreeMap<Double, List<String>> order = new TreeMap<>();
+        Map<String, List<String>> map = new HashMap<>();//将同一个hostid的数据合并到一个list中
+        List<String> source = new LinkedList<>();//对输入数据进行转码，进行无副作用的删除操作
+        TreeMap<Double, List<String>> order = new TreeMap<>();//按照比分进行排序
         source.addAll(results);
         for(String str : results){
             String[] array = str.split(",");
@@ -22,17 +22,26 @@ public class HostCrowding {
                 order.put(point, list);
                 map.put(array[0], list);
             }
-        }
-        List<String> pages = new LinkedList<>();
+        }//组织数据，写入map
+        List<String> pages = new LinkedList<>();//结果页
         while(!source.isEmpty()){
             int count = resultsPerPage;
-            while(count >0 && !source.isEmpty() ){
+            while(count >0 && !source.isEmpty() ){//当前页满或是剩余元素已经空了
                 Object[] keys = order.keySet().toArray();
+                //先取出当前的key，然后依次从队列头部取出信息放入页中
+                //如果一轮匹配页面不满，则再执行一次
                 for(int i=keys.length-1;i>=0&& count >0;i--){
                     Double point = (Double)keys[i];
                     List<String> list = order.get(point);
                     String thisValue = list.get(0);
                     pages.add(thisValue);
+                    //@transaction start
+                    /**
+                     * 1. 队列移除刚刚加入页面的元素
+                     * 2. order中更新key为新的队头的point
+                     * 3. 从source中移除元素
+                     * 4. count--
+                     */
                     list.remove(0);
                     order.remove(point);
                     if(list.size()>0) {
@@ -43,9 +52,10 @@ public class HostCrowding {
                     }
                     source.remove(thisValue);
                     count--;
+                    //@transaction end
                 }
             }
-            pages.add("");
+            pages.add("");//一页count满
         }
         return pages;
     }
